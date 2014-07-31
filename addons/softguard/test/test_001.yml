@@ -1,0 +1,88 @@
+-
+ Categoria para cliente duplicado.
+-
+ !record {model: res.partner.category, id: category_0001 }:
+    name: E-4199
+
+-
+ Cliente duplicado (1/2).
+-
+ !record {model: res.partner, id: par_0001 }:
+    name: Abate Daga Domingo
+    ref: 4199.0
+
+-
+ Cliente duplicado (2/2). X Categoria.
+-
+ !record {model: res.partner, id: par_0002 }:
+    name: Abate Daga Domingo 2
+    category_id:
+       - category_0001
+
+-
+ Categoria para cliente no duplicado.
+-
+ !record {model: res.partner.category, id: category_0002 }:
+    name: E-3467
+
+-
+ Cliente no duplicado.
+-
+ !record {model: res.partner, id: par_0003 }:
+    name: ETMAN
+    category_id: 
+        - category_0002
+
+-
+ New import item.
+-
+ !record {model: softguard.import, id: import_001 }:
+        name: Import test
+
+-
+ Load file.
+-
+ !python {model: softguard.import }: |
+    import tools
+    import base64
+    csv_file = open(tools.config['addons_path'] + '/softguard/test/import_test.csv')
+    self.write(cr, uid, [ref("import_001")], { 'data': base64.encodestring(csv_file.read()) })
+
+-
+ Load lines.
+-
+ !python {model: softguard.import }: |
+    self.do_load(cr, uid, [ref('import_001')])
+
+-
+ Update data from lines.
+-
+ !python {model: softguard.import }: |
+    self.do_import(cr, uid, [ref('import_001')])
+
+-
+ Check if message for duplicated partners.
+-
+ !python {model: res.partner }: |
+    par_0001 = self.browse(cr, uid, ref('par_0001'))
+    par_0002 = self.browse(cr, uid, ref('par_0002'))
+    assert len(par_0001.message_ids) == 3, 'We must have 3 messages for this partner'
+    assert len(par_0001.message_ids) == 3, 'We must have 3 messages for this partner'
+    assert par_0001.message_ids[0].body == '<b>Processing row 180, we found duplicated partner. Please check which partner must be deleted</b>', 'Wrong message 1.'
+    assert par_0001.message_ids[1].body == '<b>Processing row 133, we found duplicated partner. Please check which partner must be deleted</b>', 'Wrong message 0.'
+
+-
+ Chequear el cliente no duplicado, a ver si fue actualizado.
+-
+ !assert {model: res.partner, id: par_0003 }:
+    - name == "ETMAN"
+    - country_id.name == 'Argentina'
+    - state_id.name == 'Santa Fe'
+
+-
+ Chequea cuantos clientes fueron creados.
+-
+ !python {model: res.partner }: |
+    par_ids = self.search(cr, uid, [])
+    assert len(par_ids) == 772, "No enought partners created"
+

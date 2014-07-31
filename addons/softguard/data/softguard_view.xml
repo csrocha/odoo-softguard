@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_softguard_import_form" model="ir.ui.view">
+            <field name="name">softguard.import.form</field>
+            <field name="model">softguard.import</field>
+            <field name="arch" type="xml">
+                <form string="Softguard data import" version="7.0">
+                    <group>
+                            <field name="name" />
+                            <field name="data" />
+                            <button name="do_load" string="Load" type="object"/>
+                            <button name="do_import" string="Import" type="object"/>
+		    </group>
+	        </form>
+            </field>
+        </record>
+
+        <record id="action_softguard_import" model="ir.actions.act_window">
+            <field name="name">Import Softguard Data</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">softguard.import</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                   Add new softguard file. 
+                </p>
+            </field>
+        </record>
+        <menuitem string="Softguard" id="menu_softguard" sequence="8" parent="base.menu_config"/>
+        <menuitem action="action_softguard_import" id="menu_softguard_import" sequence="8" parent="menu_softguard"/>
+
+
+    </data>
+</openerp>
