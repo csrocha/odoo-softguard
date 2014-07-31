@@ -84,5 +84,5 @@
 -
  !python {model: res.partner }: |
     par_ids = self.search(cr, uid, [])
-    assert len(par_ids) == 772, "No enought partners created"
+    assert len(par_ids) == 71, "No enought partners created"
 
