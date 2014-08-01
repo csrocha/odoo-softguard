@@ -31,42 +31,51 @@ def update(o, d):
 class softguard_import_line(osv.osv):
     _name = 'softguard.import.line'
 
-    # cue_cIdExtendido.
-
-    def _get_related_ids(self, cr, uid, ids, field_name, arg, context):
+    def create(self, cr, uid, vals, context=None):
         par_obj = self.pool.get('res.partner')
         con_obj = self.pool.get('account.analytic.account')
+        
+        par_key = vals['cue_cIdExtendido'].strip()
+        par_ids = par_obj.search(cr, uid, [ '|', '|',
+            ('ref','=','%s' % par_key),
+            ('ref','=','%s.0' % par_key),
+            ('category_id','=','E-%s' % par_key),
+        ])
+        con_key = vals['cue_ncuenta']
+        con_ids = con_obj.search(cr, uid, [('name','=',con_key)])
+        vals.update({
+            'rel_partner_ids': [ (4, par_id) for par_id in par_ids ],
+            'rel_contract_ids': [ (4, con_id) for con_id in con_ids ],
+        })
+        
+        return super(softguard_import_line, self).create(cr, uid, vals, context=context)
+
+    def _get_rel_contract_ids(self, cr, uid, ids, context):
+       return r
+
+    def _get_message(self, cr, uid, ids, field_name, arg, context):
         r = {}
         
         for line in self.browse(cr, uid, ids, context=context):
-            par_key = line.cue_cIdExtendido.strip()
-            par_ids = par_obj.search(cr, uid, [ '|', '|',
-                ('ref','=','%s' % par_key),
-                ('ref','=','%s.0' % par_key),
-                ('category_id','=','E-%s' % par_key),
-            ])
-            con_ids = con_obj.search(cr, uid, [('name','=',line.cue_ncuenta)])
             msg = "%s, %s" % (
-                (len(par_ids) == 0 and 'No Partner') or
-                (len(par_ids) >  1 and 'Error: Multiple Partners') or
-                (len(par_ids) == 1 and 'Partner Ok'),
-                (len(con_ids) == 0 and 'No Contract') or
-                (len(con_ids) >  1 and 'Error: Multiple Contract') or
-                (len(con_ids) == 1 and 'Contract Ok'),
+                (len(line.rel_partner_ids) == 0 and 'No Partner') or
+                (len(line.rel_partner_ids) >  1 and 'Error: Multiple Partners') or
+                (len(line.rel_partner_ids) == 1 and 'Partner Ok'),
+                (len(line.rel_contract_ids) == 0 and 'No Contract') or
+                (len(line.rel_contract_ids) >  1 and 'Error: Multiple Contract') or
+                (len(line.rel_contract_ids) == 1 and 'Contract Ok'),
             )
-            r[line.id] = {
-                'rel_partner_ids': par_ids,
-                'rel_contract_ids': con_ids,
-                'message': msg,
-            }
+            r[line.id] =  msg
 
         return r
 
     _columns = {
         'import_id': fields.many2one('softguard.import', 'Softguard Import', ondelete="cascade", required=True),
-        'rel_partner_ids': fields.function(_get_related_ids, type='many2many', obj='res.partner', string='Related Partners', method=True, multi='related'),
-        'rel_contract_ids': fields.function(_get_related_ids, type='many2many', obj='account.analytic.account', string='Related Contracts', method=True, multi='related'),
-        'message': fields.function(_get_related_ids, type='char', string='Message', multi='related'),
+        #'rel_partner_ids': fields.function(_get_related_ids, type='many2many', obj='res.partner', string='Related Partners', method=True, multi='related'),
+        #'rel_contract_ids': fields.function(_get_related_ids, type='many2many', obj='account.analytic.account', string='Related Contracts', method=True, multi='related'),
+        'rel_partner_ids': fields.many2many('res.partner', 'rel_partner_import_line', 'import_line_id', 'parner_id', string='Related Partners'),
+        'rel_contract_ids': fields.many2many('account.analytic.account', 'rel_contract_import_line', 'import_line_id', 'contract_id', string='Related Contracts'),
+        'message': fields.function(_get_message, type='char', string='Message'),
         'state': fields.selection([('draft', 'Draft'),('hold','Hold'),('open','Open'),('done','Done')], 'State'),
 
         'name': fields.char('Row number'),
@@ -129,6 +138,10 @@ class softguard_import_line(osv.osv):
         hold_ids = []
         done_ids = []
 
+        state_Situacion = {
+            'Habilitado': 'installed',
+        }
+
         for line in self.browse(cr, uid, ids):
             pars = line.rel_partner_ids
             cons = line.rel_contract_ids
@@ -183,6 +196,7 @@ class softguard_import_line(osv.osv):
                 'partner_id': par_ids[0],
                 'partner_invoice_id': par_ids[0],
                 'partner_shipping_id': par_ids[0],
+                'utility_product_line_ids': [ (0, 0, { 'product_id': line.import_id.product_id.id, 'state': state_Situacion.get(line.Situacion, 'draft') }) ],
             }
 
             if len(con_ids) == 1:
@@ -238,9 +252,10 @@ class softguard_import(osv.osv):
 
     _columns = {
         'name': fields.char('Importation Name'),
-        'date_load': fields.datetime('Load date'),
-        'date_update': fields.datetime('Update date'),
+        'date': fields.datetime('Date'),
         'data': fields.binary('Data File'),
+        'product_id': fields.many2one('product.product', 'Default Product'),
+        'check_update_date': fields.boolean('Check update dates'),
         'line_ids': fields.one2many('softguard.import.line', 'import_id', 'Lines'),
     }
 
@@ -269,6 +284,10 @@ class softguard_import(osv.osv):
             'res_model':'softguard.import.line',
             'type':'ir.actions.act_window',
         }
+
+    def do_clean(self, cr, uid, ids, context=None):
+        self.write(cr, uid, ids, {'line_ids': [ (5,) ]})
+        return True
 
     def do_list_all(self, cr, uid, ids, context=None):
         return  {

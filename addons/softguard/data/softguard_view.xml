@@ -21,12 +21,12 @@
                         <label for="rel_partner_ids"/>
                         <button name="open_partners" string="Open" type="object" icon="terp-gtk-jump-to-ltr"/>
                         <group col="1">
-                            <field name="rel_partner_ids" widget="one2many" nolabel="1"/>
+                            <field name="rel_partner_ids" widget="many2many" nolabel="1"/>
                         </group>
                         <label for="rel_contract_ids"/>
                         <button name="open_contracts" string="Open" type="object" icon="terp-gtk-jump-to-ltr"/>
                         <group col="1">
-                            <field name="rel_contract_ids" widget="one2many" nolabel="1"/>
+                            <field name="rel_contract_ids" widget="many2many" nolabel="1"/>
                         </group>
                     </group>
                     <group col="4">
@@ -73,7 +73,6 @@
             <field name="arch" type="xml">
                 <tree string="Softguard line data import" version="7.0">
                     <field name="name"/>
-                    <field name="message"/>
                     <field name="rel_partner_ids" widget="one2many"/>
                     <field name="rel_contract_ids" widget="one2many"/>
                     <field name="state"/>
@@ -91,9 +90,14 @@
                         <field name="data" />
                     </group>
                     <group>
+                        <field name="product_id" />
+                        <field name="check_update_date" />
+                    </group>
+                    <group>
                         <div>
                         <button name="do_load"   string="Load"   type="object"/>
                         <button name="do_import" string="Import" type="object"/>
+                        <button name="do_clean"  string="Clean"  type="object"/>
                         </div>
                         <div>
                         <button name="do_list_all"  string="Show All Lines"  type="object"/>
