@@ -1,18 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
+        <record id="view_softguard_import_line_form" model="ir.ui.view">
+            <field name="name">softguard.import.line.form</field>
+            <field name="model">softguard.import.line</field>
+            <field name="arch" type="xml">
+                <form string="Softguard line data import" version="7.0">
+                    <header>
+                        <button name="do_draft" string="Set to draft" states="hold,open,done"  type="object"/>
+                        <button name="do_open"  string="Validate"     states="draft"           class="oe_highlight" type="object"/>
+                        <button name="do_hold"  string="Hold"         states="draft,open"      type="object"/>
+                        <button name="do_done"  string="Import"       states="open"            type="object"/>
+                        <field name="state"  widget="statusbar" statusbar_colors='{"error":"red"}'/>
+                    </header>
+                    <group col="4">
+                        <field name="name" />
+                        <field name="message" />
+                    </group>
+                    <group col="1">
+                        <label for="rel_partner_ids"/>
+                        <button name="open_partners" string="Open" type="object" icon="terp-gtk-jump-to-ltr"/>
+                        <group col="1">
+                            <field name="rel_partner_ids" widget="one2many" nolabel="1"/>
+                        </group>
+                        <label for="rel_contract_ids"/>
+                        <button name="open_contracts" string="Open" type="object" icon="terp-gtk-jump-to-ltr"/>
+                        <group col="1">
+                            <field name="rel_contract_ids" widget="one2many" nolabel="1"/>
+                        </group>
+                    </group>
+                    <group col="4">
+                        <field name='cue_iid'/>
+                        <field name='cue_clinea'/>
+                        <field name='cue_ncuenta'/>
+                        <field name='cue_cnombre'/>
+                        <field name='cue_ccalle'/>
+                        <field name='cue_clocalidad'/>
+                        <field name='cue_cprovincia'/>
+                        <field name='cue_provincia'/>
+                        <field name='cue_ccodigopostal'/>
+                        <field name='Situacion'/>
+                        <field name='cue_cLatLng'/>
+                        <field name='sta_cultimaalarma'/>
+                        <field name='sta_dfechautimaalarma'/>
+                        <field name='sta_dfechaultimotst'/>
+                        <field name='cod_cdescripcion'/>
+                        <field name='cod_nColorLetra'/>
+                        <field name='cod_ncolor'/>
+                        <field name='sta_nestado'/>
+                        <field name='act_nestado'/>
+                        <field name='tip_ccodigo'/>
+                        <field name='tip_cdescripcion'/>
+                        <field name='tip_curlimagen'/>
+                        <field name='tip_cservicio'/>
+                        <field name='tip_nTipo'/>
+                        <field name='tip_nCondicion'/>
+                        <field name='tip_idKey'/>
+                        <field name='sta_nEnFalloDeAC'/>
+                        <field name='cue_nEfectiva'/>
+                        <field name='cue_cIdExtendido'/>
+                        <field name='cue_iZonaHoraria'/>
+                        <field name='cue_cPartitionInfo'/>
+                        <field name='cue_nparticion'/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_softguard_import_line_tree" model="ir.ui.view">
+            <field name="name">softguard.import.line.tree</field>
+            <field name="model">softguard.import.line</field>
+            <field name="arch" type="xml">
+                <tree string="Softguard line data import" version="7.0">
+                    <field name="name"/>
+                    <field name="message"/>
+                    <field name="rel_partner_ids" widget="one2many"/>
+                    <field name="rel_contract_ids" widget="one2many"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+ 
         <record id="view_softguard_import_form" model="ir.ui.view">
             <field name="name">softguard.import.form</field>
             <field name="model">softguard.import</field>
             <field name="arch" type="xml">
                 <form string="Softguard data import" version="7.0">
                     <group>
-                            <field name="name" />
-                            <field name="data" />
-                            <button name="do_load" string="Load" type="object"/>
-                            <button name="do_import" string="Import" type="object"/>
-		    </group>
-	        </form>
+                        <field name="name" />
+                        <field name="data" />
+                    </group>
+                    <group>
+                        <div>
+                        <button name="do_load"   string="Load"   type="object"/>
+                        <button name="do_import" string="Import" type="object"/>
+                        </div>
+                        <div>
+                        <button name="do_list_all"  string="Show All Lines"  type="object"/>
+                        <button name="do_list_hold" string="Show Hold Lines" type="object"/>
+                        </div>
+                    </group>
+                </form>
             </field>
         </record>
 
@@ -34,3 +122,6 @@
 
     </data>
 </openerp>
+<!--
+ vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
+ -->

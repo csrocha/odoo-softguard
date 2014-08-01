@@ -61,15 +61,20 @@
     self.do_import(cr, uid, [ref('import_001')])
 
 -
- Check if message for duplicated partners.
+ Check if message is only one. More than one means has trouble.
 -
  !python {model: res.partner }: |
     par_0001 = self.browse(cr, uid, ref('par_0001'))
     par_0002 = self.browse(cr, uid, ref('par_0002'))
-    assert len(par_0001.message_ids) == 3, 'We must have 3 messages for this partner'
-    assert len(par_0001.message_ids) == 3, 'We must have 3 messages for this partner'
-    assert par_0001.message_ids[0].body == '<b>Processing row 180, we found duplicated partner. Please check which partner must be deleted</b>', 'Wrong message 1.'
-    assert par_0001.message_ids[1].body == '<b>Processing row 133, we found duplicated partner. Please check which partner must be deleted</b>', 'Wrong message 0.'
+    assert len(par_0001.message_ids) == 1, 'We must have 1 messages for this partner'
+    assert len(par_0002.message_ids) == 1, 'We must have 1 messages for this partner'
+
+-
+ Check if hold lines has duplicated partners, and not have any contract.
+-
+ !assert {model: softguard.import.line, search: "[('state','=','hold')]", "Check hold for duplicates" }:
+    - len(rel_partner_ids) > 1
+    - len(rel_contract_ids) == 0
 
 -
  Chequear el cliente no duplicado, a ver si fue actualizado.
