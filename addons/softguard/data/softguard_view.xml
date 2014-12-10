@@ -92,6 +92,8 @@
                     <group>
                         <field name="product_id" />
                         <field name="check_update_date" />
+                        <field name="hold_no_partners" />
+                        <field name="hold_no_contracts" />
                     </group>
                     <group>
                         <div>

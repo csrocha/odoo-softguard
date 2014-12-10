@@ -10,7 +10,6 @@
     'depends': [
         'base',
         'mail',
-        'l10n_ar_states',
         'public_utility_service',
     ],
     'demo': [],

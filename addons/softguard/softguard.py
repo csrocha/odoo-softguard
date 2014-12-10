@@ -12,10 +12,7 @@ except:
     import StringIO
 
 def takeone(l, alt=False):
-    if l and len(l) > 0:
-        return l[0]
-    else:
-        return alt
+    return ((l or []) + [alt])[0]
 
 def update(o, d):
     dn = {}
@@ -71,9 +68,8 @@ class softguard_import_line(osv.osv):
 
     _columns = {
         'import_id': fields.many2one('softguard.import', 'Softguard Import', ondelete="cascade", required=True),
-        #'rel_partner_ids': fields.function(_get_related_ids, type='many2many', obj='res.partner', string='Related Partners', method=True, multi='related'),
-        #'rel_contract_ids': fields.function(_get_related_ids, type='many2many', obj='account.analytic.account', string='Related Contracts', method=True, multi='related'),
         'rel_partner_ids': fields.many2many('res.partner', 'rel_partner_import_line', 'import_line_id', 'parner_id', string='Related Partners'),
+        'rel_invoice_address_ids': fields.many2many('res.partner', 'rel_address_import_line', 'import_line_id', 'parner_id', string='Related Address'),
         'rel_contract_ids': fields.many2many('account.analytic.account', 'rel_contract_import_line', 'import_line_id', 'contract_id', string='Related Contracts'),
         'message': fields.function(_get_message, type='char', string='Message'),
         'state': fields.selection([('draft', 'Draft'),('hold','Hold'),('open','Open'),('done','Done')], 'State'),
@@ -149,7 +145,7 @@ class softguard_import_line(osv.osv):
             if line.state != 'open':
                 continue
 
-            if len(pars) > 1 or len(cons) > 1:
+            if (len(pars) > 1 or len(cons) > 1):
                 hold_ids.append(line.id)
                 continue
 
@@ -162,7 +158,7 @@ class softguard_import_line(osv.osv):
                 'street2': '',
                 'city': line.cue_clocalidad.title(),
                 'state_id': takeone(sta_obj.search(cr, uid, [('name','ilike',line.cue_provincia)])),
-                'country_id': takeone(cou_obj.search(cr, uid, [('name','ilike','argentina')])),
+                'country_id': line.import_id.country_id.id,
                 'zip': line.cue_ccodigopostal,
             }
 
@@ -181,7 +177,8 @@ class softguard_import_line(osv.osv):
                 par_obj.write(cr, uid, par_ids, values)
                 msg =  _('<b>Updated from row %s using softguard import %s</b>') % (line.name, line.import_id.name)
                 par_obj.message_post(cr, uid, par_ids, body=msg, context=context)
-
+            elif len(par_ids) == 0  and line.hold_no_partners:
+                hold_ids.append(line.id)
             else:
                 par_ids = [ par_obj.create(cr, uid, values) ]
                 msg =  _('<b>Created from row %s using softguard import %s</b>') % (line.name, line.import_id.name)
@@ -211,13 +208,15 @@ class softguard_import_line(osv.osv):
                 con_obj.write(cr, uid, con_ids, values)
                 msg =  _('<b>Updated from row %s using softguard import %s</b>') % (line.name, line.import_id.name)
                 con_obj.message_post(cr, uid, con_ids, body=msg, context=context)
-
+            elif len(con_ids) == 0  and line.hold_no_contract:
+                hold_ids.append(line.id)
             else:
                 con_ids = [ con_obj.create(cr, uid, values) ]
                 msg =  _('<b>Created from row %s using softguard import %s</b>') % (line.name, line.import_id.name)
                 con_obj.message_post(cr, uid, con_ids, body=msg, context=context)
 
-            done_ids.append(line.id)
+            if line.id not in hold_ids:
+                done_ids.append(line.id)
 
         self.write(cr, uid, hold_ids, {'state':'hold'})
         self.write(cr, uid, done_ids, {'state':'done'})
@@ -253,10 +252,13 @@ class softguard_import(osv.osv):
     _columns = {
         'name': fields.char('Importation Name'),
         'date': fields.datetime('Date'),
+        'hold_no_partners': fields.boolean('Hold lines without partners'),
+        'hold_no_contracts': fields.boolean('Hold lines without contracts'),
         'data': fields.binary('Data File'),
         'product_id': fields.many2one('product.product', 'Default Product'),
         'check_update_date': fields.boolean('Check update dates'),
         'line_ids': fields.one2many('softguard.import.line', 'import_id', 'Lines'),
+        'country_id': fields.many2one('res.country', 'Default country'),
     }
 
     def do_load(self, cr, uid, ids, context=None):
