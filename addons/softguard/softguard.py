@@ -208,7 +208,7 @@ class softguard_import_line(osv.osv):
                 con_obj.write(cr, uid, con_ids, values)
                 msg =  _('<b>Updated from row %s using softguard import %s</b>') % (line.name, line.import_id.name)
                 con_obj.message_post(cr, uid, con_ids, body=msg, context=context)
-            elif len(con_ids) == 0  and line.hold_no_contract:
+            elif len(con_ids) == 0  and line.hold_no_contracts:
                 hold_ids.append(line.id)
             else:
                 con_ids = [ con_obj.create(cr, uid, values) ]
