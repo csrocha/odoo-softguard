@@ -125,7 +125,10 @@ class softguard_import_line(osv.osv):
         self.write(cr, uid, ids, {'state':'hold'})
         return True
 
-    def do_done(self, cr, uid, ids, context=None):
+    def do_done(self, cr, uid, ids,
+                hold_no_paramters=True,
+                hold_no_contracts=True,
+                context=None):
         par_obj = self.pool.get('res.partner')
         cou_obj = self.pool.get('res.country')
         sta_obj = self.pool.get('res.country.state')
@@ -177,7 +180,7 @@ class softguard_import_line(osv.osv):
                 par_obj.write(cr, uid, par_ids, values)
                 msg =  _('<b>Updated from row %s using softguard import %s</b>') % (line.name, line.import_id.name)
                 par_obj.message_post(cr, uid, par_ids, body=msg, context=context)
-            elif len(par_ids) == 0  and line.hold_no_partners:
+            elif len(par_ids) == 0  and hold_no_partners:
                 hold_ids.append(line.id)
             else:
                 par_ids = [ par_obj.create(cr, uid, values) ]
@@ -208,7 +211,7 @@ class softguard_import_line(osv.osv):
                 con_obj.write(cr, uid, con_ids, values)
                 msg =  _('<b>Updated from row %s using softguard import %s</b>') % (line.name, line.import_id.name)
                 con_obj.message_post(cr, uid, con_ids, body=msg, context=context)
-            elif len(con_ids) == 0  and line.hold_no_contracts:
+            elif len(con_ids) == 0  and hold_no_contracts:
                 hold_ids.append(line.id)
             else:
                 con_ids = [ con_obj.create(cr, uid, values) ]
@@ -277,7 +280,10 @@ class softguard_import(osv.osv):
         implin_obj = self.pool.get('softguard.import.line')
         for imp in self.browse(cr, uid, ids, context=context):
             if imp.line_ids:
-                implin_obj.do_done(cr, uid, [line.id for line in imp.line_ids], context=context)
+                implin_obj.do_done(cr, uid, [line.id for line in imp.line_ids],
+                                   hold_no_parameters = imp.hold_no_parameters,
+                                   hold_no_contracts = imp.hold_no_contracts,
+                                   context=context)
         return  {
             'domain':[('state','=','hold')],
             'name':_('Hold Lines'),
