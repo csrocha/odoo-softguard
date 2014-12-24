@@ -126,7 +126,7 @@ class softguard_import_line(osv.osv):
         return True
 
     def do_done(self, cr, uid, ids,
-                hold_no_paramters=True,
+                hold_no_partners=True,
                 hold_no_contracts=True,
                 context=None):
         par_obj = self.pool.get('res.partner')
@@ -281,7 +281,7 @@ class softguard_import(osv.osv):
         for imp in self.browse(cr, uid, ids, context=context):
             if imp.line_ids:
                 implin_obj.do_done(cr, uid, [line.id for line in imp.line_ids],
-                                   hold_no_parameters = imp.hold_no_parameters,
+                                   hold_no_partners = imp.hold_no_partners,
                                    hold_no_contracts = imp.hold_no_contracts,
                                    context=context)
         return  {
