@@ -196,7 +196,10 @@ class softguard_import_line(osv.osv):
                 'partner_id': par_ids[0],
                 'partner_invoice_id': par_ids[0],
                 'partner_shipping_id': par_ids[0],
-                'utility_product_line_ids': [ (0, 0, { 'product_id': line.import_id.product_id.id, 'state': state_Situacion.get(line.Situacion, 'draft') }) ],
+                'utility_product_line_ids': [ (0, 0, {'product_id': line.import_id.product_id.id,
+                                                      'product_uom': line.import_id.product_id.uom_id,
+                                                      'product_qty': 1,
+                                                      'state': state_Situacion.get(line.Situacion, 'draft') }) ],
             }
 
             if len(con_ids) == 1:
