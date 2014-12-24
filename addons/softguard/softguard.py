@@ -182,6 +182,7 @@ class softguard_import_line(osv.osv):
                 par_obj.message_post(cr, uid, par_ids, body=msg, context=context)
             elif len(par_ids) == 0  and hold_no_partners:
                 hold_ids.append(line.id)
+                continue
             else:
                 par_ids = [ par_obj.create(cr, uid, values) ]
                 msg =  _('<b>Created from row %s using softguard import %s</b>') % (line.name, line.import_id.name)
@@ -216,6 +217,7 @@ class softguard_import_line(osv.osv):
                 con_obj.message_post(cr, uid, con_ids, body=msg, context=context)
             elif len(con_ids) == 0  and hold_no_contracts:
                 hold_ids.append(line.id)
+                continue
             else:
                 con_ids = [ con_obj.create(cr, uid, values) ]
                 msg =  _('<b>Created from row %s using softguard import %s</b>') % (line.name, line.import_id.name)
